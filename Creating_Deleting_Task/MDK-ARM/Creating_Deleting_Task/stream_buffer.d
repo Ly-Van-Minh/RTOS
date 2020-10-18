@@ -1,0 +1,14 @@
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
+creating_deleting_task\stream_buffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+creating_deleting_task\stream_buffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+creating_deleting_task\stream_buffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+creating_deleting_task\stream_buffer.o: ../Core/Inc/FreeRTOSConfig.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+creating_deleting_task\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/stream_buffer.h

@@ -1,0 +1,1 @@
+rtos4_coutingsemaphore\startup_stm32f103xb.o: startup_stm32f103xb.s
