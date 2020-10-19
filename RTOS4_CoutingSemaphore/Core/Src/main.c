@@ -53,12 +53,12 @@ TaskHandle_t xTask1Handle;
 TaskHandle_t xTask2Handle;
 TaskHandle_t xTask3Handle;
 TaskHandle_t xTask4Handle;
-SemaphoreHandle_t CountingSemaphoreHandle;
+SemaphoreHandle_t CountingSemaphoreHandle = NULL;
 /* USER CODE BEGIN PV */
 char *pcString;
 uint16_t usRecource[3] = {111, 222, 333};
 uint8_t ucIndex = 0;
-uint8_t ucReceiveChar = 0;
+uint8_t ucReceiveChar;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,7 +69,7 @@ void vStartTask1(void *pvParameters);
 void vStartTask2(void *pvParameters);
 void vStartTask3(void *pvParameters);
 void vStartTask4(void *pvParameters);
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -109,6 +109,8 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_NVIC_SetPriority(USART1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(USART1_IRQn);
   HAL_UART_Receive_IT(&huart1, &ucReceiveChar, 1);
   /* USER CODE END 2 */
 
@@ -121,12 +123,12 @@ int main(void)
   CountingSemaphoreHandle = xSemaphoreCreateCounting(3, 0);
   if (CountingSemaphoreHandle != NULL)
   {
-    pcString = "Counting semaphore created successfuly\r\n";
+    pcString = "Counting semaphore created successfuly.\r\n";
     HAL_UART_Transmit(&huart1, (uint8_t *)pcString, strlen(pcString), 200);
   }
   else
   {
-    pcString = "Unable to creat counting semaphore\r\n";
+    pcString = "Unable to creat counting semaphore.\r\n";
     HAL_UART_Transmit(&huart1, (uint8_t *)pcString, strlen(pcString), 200);
   }
   
@@ -279,10 +281,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   HAL_UART_Receive_IT(&huart1, &ucReceiveChar, 1);
   if (ucReceiveChar == 'r')
   {
+    xSemaphoreGiveFromISR(CountingSemaphoreHandle, &xHigherPriorityTaskWoken);   
     xSemaphoreGiveFromISR(CountingSemaphoreHandle, &xHigherPriorityTaskWoken);
     xSemaphoreGiveFromISR(CountingSemaphoreHandle, &xHigherPriorityTaskWoken);
     xSemaphoreGiveFromISR(CountingSemaphoreHandle, &xHigherPriorityTaskWoken);
-    portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
   }
 }
 /* USER CODE END 4 */
@@ -302,11 +305,11 @@ void vStartTask1(void *pvParameters)
   for(;;)
   {
     pcStringTask1 = pvPortMalloc(20*sizeof(pcStringTask1));
-    sprintf(pcStringTask1, "Entered task 1\r\n About to acquired the semaphore\r\nTokens avaiable are: %d\r\n"
+    sprintf(pcStringTask1, "Entered task 1\r\nAbout to acquired the semaphore\r\nTokens avaiable are: %d\r\n\r\n"
             , (uint8_t)uxSemaphoreGetCount(CountingSemaphoreHandle));
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask1, strlen(pcStringTask1), 500);
     xSemaphoreTake(CountingSemaphoreHandle, portMAX_DELAY);
-    sprintf(pcStringTask1, "Leaving Task 1\r\n Data accessed is: %d\r\n Not releasing the semaphore\r\n\r\n"
+    sprintf(pcStringTask1, "Leaving Task 1\r\nData accessed is: %d\r\nNot releasing the semaphore\r\n\r\n"
             , usRecource[ucIndex]);
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask1, strlen(pcStringTask1), 500);
     if (ucIndex < 2)
@@ -319,6 +322,7 @@ void vStartTask1(void *pvParameters)
     }
     vPortFree(pcStringTask1);
     vTaskDelay(pdMS_TO_TICKS(3000));
+
   }
   /* USER CODE END 5 */
 }
@@ -338,11 +342,11 @@ void vStartTask2(void *pvParameters)
   for(;;)
   {
     pcStringTask2 = pvPortMalloc(20*sizeof(pcStringTask2));
-    sprintf(pcStringTask2, "Entered task 2\r\n About to acquired the semaphore\r\nTokens avaiable are: %d\r\n"
+    sprintf(pcStringTask2, "Entered task 2\r\nAbout to acquired the semaphore\r\nTokens avaiable are: %d\r\n\r\n"
             , (uint8_t)uxSemaphoreGetCount(CountingSemaphoreHandle));
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask2, strlen(pcStringTask2), 500);
     xSemaphoreTake(CountingSemaphoreHandle, portMAX_DELAY);
-    sprintf(pcStringTask2, "Leaving Task 2\r\n Data accessed is: %d\r\n Not releasing the semaphore\r\n\r\n"
+    sprintf(pcStringTask2, "Leaving Task 2\r\nData accessed is: %d\r\nNot releasing the semaphore\r\n\r\n"
             , usRecource[ucIndex]);
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask2, strlen(pcStringTask2), 500);
     if (ucIndex < 2)
@@ -374,11 +378,11 @@ void vStartTask3(void *pvParameters)
   for(;;)
   {
     pcStringTask3 = pvPortMalloc(20*sizeof(pcStringTask3));
-    sprintf(pcStringTask3, "Entered task 3\r\n About to acquired the semaphore\r\nTokens avaiable are: %d\r\n"
+    sprintf(pcStringTask3, "Entered task 3\r\nAbout to acquired the semaphore\r\nTokens avaiable are: %d\r\n\r\n"
             , (uint8_t)uxSemaphoreGetCount(CountingSemaphoreHandle));
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask3, strlen(pcStringTask3), 500);
     xSemaphoreTake(CountingSemaphoreHandle, portMAX_DELAY);
-    sprintf(pcStringTask3, "Leaving Task 3\r\n Data accessed is: %d\r\n Not releasing the semaphore\r\n\r\n"
+    sprintf(pcStringTask3, "Leaving Task 3\r\nData accessed is: %d\r\nNot releasing the semaphore\r\n\r\n"
             , usRecource[ucIndex]);
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask3, strlen(pcStringTask3), 500);
     if (ucIndex < 2)
@@ -415,11 +419,11 @@ void vStartTask4(void *pvParameters)
   for(;;)
   {
     pcStringTask4 = pvPortMalloc(20*sizeof(pcStringTask4));
-    sprintf(pcStringTask4, "Entered task 4\r\n About to acquired the semaphore\r\nTokens avaiable are: %d\r\n"
+    sprintf(pcStringTask4, "Entered task 4\r\nAbout to acquired the semaphore\r\nTokens avaiable are: %d\r\n\r\n"
             , (uint8_t)uxSemaphoreGetCount(CountingSemaphoreHandle));
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask4, strlen(pcStringTask4), 500);
     xSemaphoreTake(CountingSemaphoreHandle, portMAX_DELAY);
-    sprintf(pcStringTask4, "Leaving Task 4\r\n Data accessed is: %d\r\n Not releasing the semaphore\r\n\r\n"
+    sprintf(pcStringTask4, "Leaving Task 4\r\nData accessed is: %d\r\nNot releasing the semaphore\r\n\r\n"
             , usRecource[ucIndex]);
     HAL_UART_Transmit(&huart1, (uint8_t *)pcStringTask4, strlen(pcStringTask4), 500);
     if (ucIndex < 2)
